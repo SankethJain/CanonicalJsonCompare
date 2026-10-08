@@ -1,0 +1,23 @@
+[package]
+name = "mongo-compare"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Terminal app that compares two MongoDB exports (Extended JSON) object by object"
+repository = "https://github.com/SankethJain/CanonicalJsonCompare"
+readme = "README.md"
+keywords = ["mongodb", "json", "diff", "tui", "compare"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+chrono = { version = "0.4.42", default-features = false, features = ["clock", "std"] }
+clap = { version = "4", features = ["derive"] }
+dirs = "6"
+ratatui = "0.30"
+serde = { version = "1.0.200", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order", "raw_value"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
