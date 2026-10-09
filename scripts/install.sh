@@ -66,6 +66,10 @@ tar -xzf "$tmp/$archive" -C "$tmp"
 mkdir -p "$INSTALL_DIR"
 cp "$tmp/$BIN-$target/$BIN" "$INSTALL_DIR/$BIN"
 chmod 755 "$INSTALL_DIR/$BIN"
+if [ -f "$tmp/$BIN-$target/uninstall.sh" ]; then
+  cp "$tmp/$BIN-$target/uninstall.sh" "$INSTALL_DIR/$BIN-uninstall"
+  chmod 755 "$INSTALL_DIR/$BIN-uninstall"
+fi
 if [ "$os" = "apple-darwin" ]; then
   # Allow macOS to run a program that was not downloaded through a browser.
   xattr -d com.apple.quarantine "$INSTALL_DIR/$BIN" 2>/dev/null || true
@@ -90,5 +94,6 @@ case ":$PATH:" in
 esac
 
 say ""
-say "Done! Start it by typing:  $BIN"
-say "Try it with sample data:   $BIN --demo"
+say "Done! Start it by typing:   $BIN"
+say "Try it with sample data:     $BIN --demo"
+say "To remove it later:          $BIN-uninstall"
