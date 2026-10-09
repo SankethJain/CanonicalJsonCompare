@@ -10,6 +10,8 @@ on:
 
 permissions:
   contents: write
+  # Needed only when Windows code signing is enabled (see "Sign" below).
+  id-token: write
 
 env:
   CARGO_TERM_COLOR: always
@@ -50,6 +52,31 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y musl-tools
       - name: Build
         run: cargo build --release --locked --target ${{ matrix.target }}
+      # Optional Windows code signing with Azure Artifact Signing (formerly
+      # Trusted Signing). Signed programs are not blocked by Smart App Control
+      # and SmartScreen stops warning once the certificate has a reputation.
+      # Turned on by setting the repository variable WINDOWS_SIGNING=true;
+      # see "Code signing" in the README for the one-time Azure setup.
+      - name: Azure login (for signing)
+        if: matrix.archive == 'zip' && vars.WINDOWS_SIGNING == 'true'
+        uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Sign
+        if: matrix.archive == 'zip' && vars.WINDOWS_SIGNING == 'true'
+        uses: azure/artifact-signing-action@v2
+        with:
+          endpoint: ${{ vars.AZURE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.AZURE_SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.AZURE_CERTIFICATE_PROFILE }}
+          files: ${{ github.workspace }}\target\${{ matrix.target }}\release\${{ env.BIN }}.exe
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+          description: Mongo Compare
+          description-url: https://github.com/SankethJain/CanonicalJsonCompare
       - name: Package (zip)
         if: matrix.archive == 'zip'
         shell: pwsh
@@ -94,3 +121,17 @@ jobs:
             scripts/install.sh
             scripts/install.ps1
           generate_release_notes: true
+          body: |
+            ## Install
+
+            **Windows** - open PowerShell and paste (no admin rights needed):
+            ```powershell
+            irm https://github.com/SankethJain/CanonicalJsonCompare/releases/latest/download/install.ps1 | iex
+            ```
+            Downloading the `.zip` by hand instead? Right-click the zip > **Properties** > tick **Unblock** > **OK**
+            *before* extracting it, otherwise Windows may block `mongo-compare.exe`.
+
+            **macOS / Linux** - open Terminal and paste:
+            ```sh
+            curl -fsSL https://github.com/SankethJain/CanonicalJsonCompare/releases/latest/download/install.sh | sh
+            ```

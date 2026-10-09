@@ -38,10 +38,34 @@ This creates a **Mongo Compare** shortcut in the Start menu and on the desktop.
 No administrator rights are needed.
 
 *Prefer not to run a script?* Download `mongo-compare-x86_64-pc-windows-msvc.zip`
-from the [Releases page](https://github.com/SankethJain/CanonicalJsonCompare/releases),
-unzip it, and double-click `mongo-compare.exe`.
-If Windows shows "Windows protected your PC", click **More info → Run anyway**
-(the program is not code-signed yet).
+from the [Releases page](https://github.com/SankethJain/CanonicalJsonCompare/releases), then:
+
+1. **Before unzipping**, right-click the zip → **Properties** → tick **Unblock**
+   (bottom of the *General* tab) → **OK**.
+2. Unzip it and double-click `mongo-compare.exe`.
+
+If Windows still blocks it, see [Windows blocks the program](#windows-blocks-the-program).
+
+#### Windows blocks the program
+
+Windows treats files downloaded with a web browser as "from the internet", and
+blocks programs from the internet that are not code-signed. Depending on the
+screen you see:
+
+- **"Windows protected your PC"** (blue window, SmartScreen): click **More info**,
+  then **Run anyway**. You only need to do this once.
+- **No "Run anyway" button**, or the file was removed: unblock the file. Either
+  right-click `mongo-compare.exe` → **Properties** → tick **Unblock** → **OK**, or
+  open PowerShell in that folder and run:
+  ```powershell
+  Unblock-File .\mongo-compare.exe
+  ```
+  Using the PowerShell installer above avoids this entirely: it unblocks the
+  program for you.
+- **"Smart App Control blocked an app"**, or a message that **your organization**
+  blocked it: there is no override on that PC. Smart App Control and company
+  policies only allow code-signed programs. Ask your IT team to allow it, or ask
+  the maintainers for a signed build (see [Code signing](#code-signing)).
 
 ### macOS and Linux
 
@@ -217,6 +241,30 @@ Code layout (`src/`):
 | `report.rs` | The result model, per-field statistics and date grouping |
 | `export.rs` | HTML and CSV report |
 | `tui/` | The interface (Ratatui): screens, file picker, navigation |
+
+### Code signing
+
+Unsigned Windows programs trigger SmartScreen warnings and are blocked outright
+by Smart App Control and many company policies. The release workflow can sign
+`mongo-compare.exe` with
+[Azure Artifact Signing](https://learn.microsoft.com/azure/artifact-signing/)
+(formerly Trusted Signing), a low-cost Microsoft service. Signing is off until
+you set it up:
+
+1. In Azure, create an Artifact Signing account, complete identity validation
+   (individual or organization) and create a *Public Trust* certificate profile.
+2. Create an app registration with a federated credential for this GitHub
+   repository (OIDC; no password to store) and give it the
+   **Artifact Signing Certificate Profile Signer** role on the account.
+3. In GitHub → *Settings* → *Secrets and variables* → *Actions*, add
+   - secrets `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`;
+   - variables `AZURE_SIGNING_ENDPOINT` (for example `https://eus.codesigning.azure.net/`),
+     `AZURE_SIGNING_ACCOUNT`, `AZURE_CERTIFICATE_PROFILE`, and `WINDOWS_SIGNING` = `true`.
+4. Publish a new release (below). The Windows programs are signed before packaging.
+
+A signed program shows the publisher name instead of "Unknown publisher".
+SmartScreen may still warn for the first downloads of a new certificate, until
+it builds a reputation.
 
 **Releasing a new version:** update `version` in `Cargo.toml`, then
 
