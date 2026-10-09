@@ -266,12 +266,16 @@ A signed program shows the publisher name instead of "Unknown publisher".
 SmartScreen may still warn for the first downloads of a new certificate, until
 it builds a reputation.
 
-**Releasing a new version:** update `version` in `Cargo.toml`, then
+**Releasing a new version:** push a tag named after the version:
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.2
+git push origin v0.1.2
 ```
+
+The tag sets the version shown in the app and by `mongo-compare --version`, so
+there is nothing else to edit. Please also keep `version` in `Cargo.toml` in step,
+so local builds show the same number.
 
 The *Release* workflow builds Windows (x64, ARM), macOS (Intel, Apple Silicon) and
 Linux (x64, ARM) programs and publishes them, together with the install scripts,

@@ -22,12 +22,20 @@ use crate::engine::{CompareRequest, Progress};
 use crate::report::Status;
 use crate::ui_text::fmt_num;
 
+/// The program version. Release builds take it from the git tag (the
+/// release workflow sets `MONGO_COMPARE_VERSION`), so a tag such as `v0.2.0`
+/// is always the version people see; other builds use `Cargo.toml`.
+pub const VERSION: &str = match option_env!("MONGO_COMPARE_VERSION") {
+    Some(v) => v,
+    None => env!("CARGO_PKG_VERSION"),
+};
+
 /// Compare two MongoDB exports (mongoexport, canonical or relaxed Extended
 /// JSON) object by object using _id.
 ///
 /// Run without arguments to open the interactive screen and pick the files.
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version = VERSION, about, long_about = None)]
 struct Cli {
     /// The source file (the original / expected data).
     source: Option<PathBuf>,
