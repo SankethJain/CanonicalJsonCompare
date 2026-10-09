@@ -184,7 +184,7 @@ fn draw_header(f: &mut Frame, area: Rect) {
         Style::new().fg(Color::Black).bg(ACCENT).bold(),
     )]);
     let right = Line::from(Span::styled(
-        format!("v{}  ·  F1 help ", env!("CARGO_PKG_VERSION")),
+        format!("v{}  ·  F1 help ", crate::VERSION),
         Style::new().fg(MUTED),
     ))
     .alignment(Alignment::Right);
