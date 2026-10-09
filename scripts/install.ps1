@@ -4,8 +4,8 @@
 #   irm https://github.com/SankethJain/CanonicalJsonCompare/releases/latest/download/install.ps1 | iex
 #
 # It puts the program in %LOCALAPPDATA%\Programs\mongo-compare, adds it to
-# your PATH and creates "Mongo Compare" shortcuts in the Start menu and on
-# the desktop.
+# your PATH, creates "Mongo Compare" shortcuts in the Start menu and on the
+# desktop, and lists it in Settings > Apps so it can be uninstalled there.
 
 $ErrorActionPreference = 'Stop'
 $Repo = 'SankethJain/CanonicalJsonCompare'
@@ -67,6 +67,28 @@ foreach ($folder in @([Environment]::GetFolderPath('Programs'), [Environment]::G
     $lnk.WorkingDirectory = [Environment]::GetFolderPath('MyDocuments')
     $lnk.Description = 'Compare two MongoDB exports'
     $lnk.Save()
+}
+
+# Add "Mongo Compare" to Settings > Apps, so it can be uninstalled from there.
+$uninstaller = Join-Path $dir 'uninstall.ps1'
+if (Test-Path $uninstaller) {
+    $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\mongo-compare'
+    $version = ''
+    try { $version = ((& $exe --version) -split ' ')[-1] } catch { }
+    New-Item -Path $key -Force | Out-Null
+    $values = @{
+        DisplayName     = 'Mongo Compare'
+        DisplayVersion  = $version
+        DisplayIcon     = $exe
+        InstallLocation = $dir
+        UninstallString = "powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$uninstaller`""
+    }
+    foreach ($name in $values.Keys) {
+        New-ItemProperty -Path $key -Name $name -Value $values[$name] -PropertyType String -Force | Out-Null
+    }
+    foreach ($name in @('NoModify', 'NoRepair')) {
+        New-ItemProperty -Path $key -Name $name -Value 1 -PropertyType DWord -Force | Out-Null
+    }
 }
 
 Write-Host ''

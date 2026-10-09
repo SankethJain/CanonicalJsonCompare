@@ -89,6 +89,7 @@ jobs:
           New-Item -ItemType Directory -Force $name | Out-Null
           Copy-Item "target/${{ matrix.target }}/release/$env:BIN.exe" $name
           Copy-Item README.md $name
+          Copy-Item scripts/uninstall.ps1 $name
           Compress-Archive -Path "$name/*" -DestinationPath "$name.zip"
           (Get-FileHash "$name.zip" -Algorithm SHA256).Hash.ToLower() + "  $name.zip" | Out-File -Encoding ascii "$name.zip.sha256"
       - name: Package (tar.gz)
@@ -99,6 +100,7 @@ jobs:
           mkdir -p "$name"
           cp "target/${{ matrix.target }}/release/$BIN" "$name/"
           cp README.md "$name/"
+          cp scripts/uninstall.sh "$name/"
           tar -czf "$name.tar.gz" "$name"
           if command -v sha256sum >/dev/null; then sha256sum "$name.tar.gz" > "$name.tar.gz.sha256"; else shasum -a 256 "$name.tar.gz" > "$name.tar.gz.sha256"; fi
       - uses: actions/upload-artifact@v4
@@ -124,6 +126,8 @@ jobs:
             dist/*
             scripts/install.sh
             scripts/install.ps1
+            scripts/uninstall.sh
+            scripts/uninstall.ps1
           generate_release_notes: true
           body: |
             ## Install

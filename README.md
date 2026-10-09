@@ -97,6 +97,18 @@ cargo install --git https://github.com/SankethJain/CanonicalJsonCompare
 > download the files; in that case share the files from the Releases page some
 > other way (a shared drive, for example).
 
+### Uninstall
+
+Uninstalling removes the program, its shortcuts, its PATH entry, the remembered
+settings and the sample files. Your saved reports (`compare-report-…` folders) are
+kept.
+
+- **Windows, installed with the PowerShell command:** open **Settings → Apps →
+  Installed apps**, find **Mongo Compare**, click **⋯ → Uninstall**.
+- **Windows, unzipped by hand:** right-click `uninstall.ps1` in the program's folder
+  → **Run with PowerShell**, or simply delete the folder you unzipped.
+- **macOS / Linux:** open Terminal and type `mongo-compare-uninstall`.
+
 ---
 
 ## How to use it
