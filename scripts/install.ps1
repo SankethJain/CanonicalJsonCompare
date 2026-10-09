@@ -47,6 +47,9 @@ New-Item -ItemType Directory -Force $dir | Out-Null
 Expand-Archive -Path $zip -DestinationPath $dir -Force
 Remove-Item $zip
 $exe = Join-Path $dir "$Bin.exe"
+# Remove the "downloaded from the internet" mark so Windows SmartScreen does
+# not block the program when it is started from the shortcut.
+Get-ChildItem $dir -Recurse | Unblock-File
 Write-Host "Installed to $exe"
 
 $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
